@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head><title>ZoneAI Dashboard</title></head>
+<body>
+    <h1>ZoneAI Alerts</h1>
+    <div id="timeframes">
+        {% for tf in ['1m', '15m', '60m', '4hr'] %}
+            <h2>{{ tf }}</h2>
+            <div id="{{ tf }}"></div>
+        {% endfor %}
+    </div>
+    <script>
+        const eventSource = new EventSource('/stream');
+        eventSource.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            for (let tf in data.timeframes) {
+                const div = document.getElementById(tf);
+                div.innerHTML = '<ul>' + data.timeframes[tf].map(z => {
+                    const fibs = z.fib_bounces || {};
+                    const status = z.status || 'active';
+                    return `<li>${z.timestamp} - ${z.event} at ${z.price} (ID: ${z.zone_id}, Status: ${status})${z.last_reentry ? `<br>Re-entry: ${z.last_reentry}` : ''}<br>Fib 0.3: Max ${fibs[0.3]?.max_bounce || 0}pt<br>Fib 0.5: Max ${fibs[0.5]?.max_bounce || 0}pt<br>Fib 0.7: Max ${fibs[0.7]?.max_bounce || 0}pt</li>`;
+                }).join('') + '</ul>' || '<p>No zones detected</p>';
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+[
+  {
+    "timestamp": "2025-07-17T16:39:34.915336Z",
+    "timeframe": "4hr",
+    "event": "fib_50_touch",
+    "zone_id": "2025-07-17T08:12:00_41230_bullish",
+    "price": 18225.75,
+    "bounce_pts": 15,
+    "direction": "bullish",
+    "parent_structure": "bullish",
+    "fib_bounces": {
+      "0.3": {
+        "bounces": [],
+        "max_bounce": 0
+      },
+      "0.5": {
+        "bounces": [],
+        "max_bounce": 0
+      },
+      "0.7": {
+        "bounces": [],
+        "max_bounce": 0
+      }
+    }
+  }
+]
