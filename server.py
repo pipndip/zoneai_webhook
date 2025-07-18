@@ -1,25 +1,14 @@
-from flask import Flask, request, render_template, Response
-import json
 import os
-from datetime import datetime
-import time
-
+# ... (other imports)
 app = Flask(__name__)
-DATA_FILE = 'zones.json'
+DATA_FILE = os.path.join(os.path.dirname(__file__), 'zones.json')  # Explicit path
 
 def event_stream():
-    while True:
-        with open(DATA_FILE, 'r') as f:
-            zones = json.load(f)
-        timeframe_zones = {tf: [z for z in zones if z.get('timeframe') == tf] for tf in ['1m', '15m', '60m', '4hr']}
-        yield f"data: {json.dumps({'timeframes': timeframe_zones})}\n\n"
-        time.sleep(1)
+    # ... (existing code)
 
 @app.route('/')
 def home():
-    with open(DATA_FILE, 'r') as f:
-        zones = json.load(f)
-    return render_template('dashboard.html', zones=zones)
+    # ... (existing code)
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
@@ -49,27 +38,16 @@ def webhook():
             zones = json.load(f)
             zone_exists = next((z for z in zones if z['zone_id'] == entry['zone_id']), None)
             if zone_exists:
-                if entry['event'] in ['fib30_touch', 'fib50_touch', 'fib70_touch']:
-                    fib_level = float(entry['event'].replace('fib', '').replace('_touch', '')) / 100
-                    bounce_pts = entry.get('bounce_pts', 0)
-                    zone_exists['fib_bounces'][fib_level]['bounces'].append(bounce_pts)
-                    zone_exists['fib_bounces'][fib_level]['max_bounce'] = max(zone_exists['fib_bounces'][fib_level]['max_bounce'], bounce_pts)
-                elif entry['event'] == 'zone_invalid':
-                    zone_exists['status'] = 'invalid'
-                elif entry['event'] == 'reentry':
-                    zone_exists['last_reentry'] = timestamp
+                # ... (existing logic)
             else:
                 zones.append(entry)
             f.seek(0)
             json.dump(zones, f, indent=2)
+            print(f"Zone saved to {DATA_FILE}: {entry}")  # Debug log
         return {"status": "ok"}, 200
     except Exception as e:
         return {"status": "error", "message": str(e)}, 500
 
 @app.route('/stream')
 def stream():
-    return Response(event_stream(), mimetype="text/event-stream")
-
-if __name__ == '__main__':
-    port = int(os.getenv("PORT", 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    # ... (existing code)
