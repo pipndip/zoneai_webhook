@@ -38,4 +38,8 @@ def webhook():
         return {"status": "ok"}, 200
     except Exception as e:
         print(f"Webhook error: {str(e)}")
+<<<<<<< HEAD
         return {"status": "error", "message": str(e)}, 500
+=======
+        return {"status": "error", "message": str(e)}, 500
+>>>>>>> bf3af3dce2f713510b4dc49382fea3eb7822321f
