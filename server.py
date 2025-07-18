@@ -24,23 +24,22 @@ def home():
 @app.route('/webhook', methods=['POST'])
 def webhook():
     try:
-        data = request.get_data().decode('utf-8')
+        data = request.get_json()
         if not data:
-            return {"status": "error", "message": "No data received"}, 400
-        parts = data.split('|')
-        if len(parts) < 7:
-            return {"status": "error", "message": "Invalid data format"}, 400
-        timeframe, event, zone_id, price, bounce_pts, direction, parent_structure = parts[:7]
+            return {"status": "error", "message": "No JSON data received"}, 400
+        required_fields = ['timeframe', 'event', 'zone_id', 'price', 'bounce_pts', 'direction', 'parent_structure']
+        if not all(field in data for field in required_fields):
+            return {"status": "error", "message": "Missing required fields"}, 400
         timestamp = datetime.utcnow().isoformat() + 'Z'
         entry = {
             "timestamp": timestamp,
-            "timeframe": timeframe,
-            "event": event,
-            "zone_id": zone_id,
-            "price": float(price),
-            "bounce_pts": int(bounce_pts),
-            "direction": direction,
-            "parent_structure": parent_structure,
+            "timeframe": data['timeframe'],
+            "event": data['event'],
+            "zone_id": data['zone_id'],
+            "price": float(data['price']),
+            "bounce_pts": int(data['bounce_pts']),
+            "direction": data['direction'],
+            "parent_structure": data['parent_structure'],
             "fib_bounces": {0.3: {"bounces": [], "max_bounce": 0},
                            0.5: {"bounces": [], "max_bounce": 0},
                            0.7: {"bounces": [], "max_bounce": 0}},
@@ -50,14 +49,14 @@ def webhook():
             zones = json.load(f)
             zone_exists = next((z for z in zones if z['zone_id'] == entry['zone_id']), None)
             if zone_exists:
-                if event in ['fib30_touch', 'fib50_touch', 'fib70_touch']:
-                    fib_level = float(event.replace('fib', '').replace('_touch', '')) / 100
+                if entry['event'] in ['fib30_touch', 'fib50_touch', 'fib70_touch']:
+                    fib_level = float(entry['event'].replace('fib', '').replace('_touch', '')) / 100
                     bounce_pts = entry.get('bounce_pts', 0)
                     zone_exists['fib_bounces'][fib_level]['bounces'].append(bounce_pts)
                     zone_exists['fib_bounces'][fib_level]['max_bounce'] = max(zone_exists['fib_bounces'][fib_level]['max_bounce'], bounce_pts)
-                elif event == 'zone_invalid':
+                elif entry['event'] == 'zone_invalid':
                     zone_exists['status'] = 'invalid'
-                elif event == 'reentry':
+                elif entry['event'] == 'reentry':
                     zone_exists['last_reentry'] = timestamp
             else:
                 zones.append(entry)
