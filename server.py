@@ -1,45 +1,52 @@
+from flask import Flask, request, jsonify
+import json, os, time
+
+app = Flask(__name__)
+
+# Detect local vs Render
+DATA_FILE = '/opt/render/project/src/zones.json' if os.getenv('RENDER') else 'zones.json'
+
+# Ensure zones.json exists
+if not os.path.exists(DATA_FILE):
+    with open(DATA_FILE, 'w') as f:
+        json.dump([], f)
+
 @app.route('/webhook', methods=['POST'])
 def webhook():
     try:
-        data = request.get_json()
-        if not data:
-            return {"status": "error", "message": "No JSON data received"}, 400
-        required_fields = ['timeframe', 'event', 'zone_id', 'price', 'bounce_pts', 'direction', 'parent_structure']
-        if not all(field in data for field in required_fields):
-            return {"status": "error", "message": "Missing required fields"}, 400
-        timestamp = datetime.utcnow().isoformat() + 'Z'
-        # Append a unique suffix to zone_id if it exists
-        base_zone_id = data['zone_id']
-        entry = {
-            "timestamp": timestamp,
-            "timeframe": data['timeframe'],
-            "event": data['event'],
-            "zone_id": f"{base_zone_id}_{int(time.time() * 1000)}",  # Unique with millisecond timestamp
-            "price": float(data['price']),
-            "bounce_pts": int(data['bounce_pts']),
-            "direction": data['direction'],
-            "parent_structure": data['parent_structure'],
-            "fib_bounces": {0.3: {"bounces": [], "max_bounce": 0},
-                           0.5: {"bounces": [], "max_bounce": 0},
-                           0.7: {"bounces": [], "max_bounce": 0}},
-            "status": "active"
-        }
-        try:
-            with open(DATA_FILE, 'r+') as f:
-                zones = json.load(f)
-                zones.append(entry)  # Always append new entry
-                f.seek(0)
-                json.dump(zones, f, indent=2)
-                print(f"Zone saved to {DATA_FILE}: {entry}")
-        except FileNotFoundError:
-            with open(DATA_FILE, 'w') as f:
-                json.dump([entry], f, indent=2)
-                print(f"Zone created in {DATA_FILE}: {entry}")
-        return {"status": "ok"}, 200
+        data = request.get_json(force=True)
+
+        # Check all required fields
+        required = ["timeframe", "event", "zone_id", "price", "bounce_pts", "direction", "parent_structure"]
+        for field in required:
+            if field not in data:
+                return jsonify({"error": f"Missing field: {field}"}), 400
+
+        # Make zone_id unique with timestamp
+        millis = int(time.time() * 1000)
+        data['zone_id'] = f"{data['zone_id']}_{millis}"
+
+        # Load zones
+        with open(DATA_FILE, 'r') as f:
+            zones = json.load(f)
+
+        zones.append(data)
+
+        # Save
+        with open(DATA_FILE, 'w') as f:
+            json.dump(zones, f, indent=2)
+
+        print(f"[INFO] Zone saved: {data['zone_id']}")
+        return jsonify({"status": "success", "zone_id": data['zone_id']}), 200
+
     except Exception as e:
-        print(f"Webhook error: {str(e)}")
-<<<<<<< HEAD
-        return {"status": "error", "message": str(e)}, 500
-=======
-        return {"status": "error", "message": str(e)}, 500
->>>>>>> bf3af3dce2f713510b4dc49382fea3eb7822321f
+        print(f"[ERROR] {e}")
+        print(f"[RAW DATA] {request.data.decode('utf-8')}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/', methods=['GET'])
+def health():
+    return jsonify({"status": "webhook live"}), 200
+
+if __name__ == '__main__':
+    app.run(debug=True)

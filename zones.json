@@ -22,5 +22,64 @@
         "max_bounce": 0
       }
     }
+  },
+  {
+    "timestamp": "2025-07-18T22:10:35.733360Z",
+    "timeframe": "1m",
+    "event": "new_zone",
+    "zone_id": "2025-07-18T16:08:00_125_bullish",
+    "price": 65000.0,
+    "bounce_pts": 0,
+    "direction": "bullish",
+    "parent_structure": "bullish",
+    "fib_bounces": {
+      "0.3": {
+        "bounces": [],
+        "max_bounce": 0
+      },
+      "0.5": {
+        "bounces": [],
+        "max_bounce": 0
+      },
+      "0.7": {
+        "bounces": [],
+        "max_bounce": 0
+      }
+    },
+    "status": "active"
+  },
+  {
+    "timestamp": "2025-07-18T23:33:32.235100Z",
+    "timeframe": "1m",
+    "event": "new_zone",
+    "zone_id": "2025-07-18T23:25:00_131_bullish",
+    "price": 65000.0,
+    "bounce_pts": 0,
+    "direction": "bullish",
+    "parent_structure": "bullish",
+    "fib_bounces": {
+      "0.3": {
+        "bounces": [],
+        "max_bounce": 0
+      },
+      "0.5": {
+        "bounces": [],
+        "max_bounce": 0
+      },
+      "0.7": {
+        "bounces": [],
+        "max_bounce": 0
+      }
+    },
+    "status": "active"
+  },
+  {
+    "timeframe": "4h",
+    "event": "new_zone",
+    "zone_id": "2025-07-19T23:00:00_41230_bullish_1752978412985",
+    "price": 18225.75,
+    "bounce_pts": 0,
+    "direction": "bullish",
+    "parent_structure": "HH"
   }
 ]
